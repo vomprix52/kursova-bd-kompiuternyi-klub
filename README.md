@@ -6,6 +6,7 @@
 
 📄 **Пояснювальна записка:** [docs/Kursova_BD_Kompiuternyi_klub.pdf](docs/Kursova_BD_Kompiuternyi_klub.pdf)
 📊 **Презентація:** [presentation/Prezentatsiia_Hlodovskyi.pptx](presentation/Prezentatsiia_Hlodovskyi.pptx)
+🎬 **Демо-відео застосунку (3 хв):** [docs/Demo_CyberClub.mp4](docs/Demo_CyberClub.mp4)
 
 ## Що реалізовано
 
