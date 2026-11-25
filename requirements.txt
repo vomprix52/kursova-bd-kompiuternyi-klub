@@ -1,0 +1,11 @@
+# застосунок
+Flask==3.1.3
+PyMySQL==1.2.3
+cryptography==50.0.2   # для автентифікації caching_sha2_password у MySQL 8+
+Werkzeug==3.1.9
+# скрипти збірки записки, презентації і скриншотів (необов'язково)
+python-docx==1.2.0
+python-pptx==1.0.2
+pymupdf==1.28.2
+playwright==1.63.0
+Markdown==3.11.3

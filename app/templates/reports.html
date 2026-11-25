@@ -1,0 +1,24 @@
+{% extends 'base.html' %}{% block title %}Звіти{% endblock %}
+{% block content %}
+<h1>Звіти для керуючого</h1>
+<div class="kpi">
+  {% for m in months %}<div class="card"><div class="v">{{ '{:,.0f}'.format(m.game_rev).replace(',', ' ') }} грн</div><div class="l">ігровий час, {{ m.ym }} · {{ m.sessions }} сесій</div></div>{% endfor %}
+</div>
+<div class="grid g2">
+  <div class="card"><h2>Денна виручка за останні 14 днів</h2>
+    <div class="bars">{% for d in daily %}<div style="height:{{ (100 * d.revenue|float / peak) | round }}%" title="{{ d.revenue }} грн"><span>{{ d.work_date.strftime('%d.%m') }}</span></div>{% endfor %}</div>
+    <p class="muted" style="margin-top:28px">Джерело: представлення v_zone_daily_revenue</p></div>
+  <div class="card"><h2>Зони за останній місяць</h2>
+    <table><tr><th>Зона</th><th class="num">Сесій</th><th class="num">Годин</th><th class="num">Виручка</th></tr>
+    {% for z in zones %}<tr><td>{{ z.zone_name }}</td><td class="num">{{ z.sessions }}</td><td class="num">{{ z.hours }}</td><td class="num">{{ z.revenue }}</td></tr>{% endfor %}</table></div>
+</div>
+<div class="grid g11" style="margin-top:18px">
+  <div class="card"><h2>Найактивніші клієнти</h2>
+    <table><tr><th>Клієнт</th><th>Рівень</th><th class="num">Сесій</th><th class="num">Годин</th><th class="num">Витрачено</th></tr>
+    {% for c in top %}<tr><td>{{ c.client_name }}</td><td>{{ c.level_name }}</td><td class="num">{{ c.sessions }}</td><td class="num">{{ c.hours_played }}</td><td class="num">{{ c.total_spent }}</td></tr>{% endfor %}</table></div>
+  <div class="card"><h2>Журнал змін цін</h2>
+    <table><tr><th>Коли</th><th>Об'єкт</th><th class="num">Було</th><th class="num">Стало</th><th>Хто</th></tr>
+    {% for a in audit %}<tr><td>{{ a.changed_at.strftime('%d.%m %H:%M') }}</td><td>{{ a.table_name }} #{{ a.record_id }}</td><td class="num">{{ a.old_value }}</td><td class="num">{{ a.new_value }}</td><td class="muted">{{ a.who or a.changed_by }}</td></tr>
+    {% else %}<tr><td colspan="5" class="muted">Змін цін ще не було</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

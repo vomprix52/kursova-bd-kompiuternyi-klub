@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% block title %}Вхід{% endblock %}
+{% block content %}
+<div class="card login">
+  <h1>Вхід до системи</h1>
+  <form method="post">
+    <div class="tabs">
+      <label><input type="radio" name="kind" value="staff" checked><span>Персонал</span></label>
+      <label><input type="radio" name="kind" value="client"><span>Клієнт</span></label>
+    </div>
+    <label>Логін</label><input name="login" autofocus required>
+    <label>Пароль</label><input name="password" type="password" required>
+    <button class="btn" style="width:100%">Увійти</button>
+  </form>
+  <p class="muted">Роль користувача визначається посадою працівника в БД; кожна роль працює під окремим обліковим записом MySQL.</p>
+</div>
+{% endblock %}

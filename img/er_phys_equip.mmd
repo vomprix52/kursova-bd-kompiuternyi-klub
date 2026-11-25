@@ -1,0 +1,41 @@
+erDiagram
+  direction LR
+  computer {
+    smallint computer_id PK
+    varchar_6 seat_label UK
+    tinyint zone_id FK
+    smallint config_id FK
+    varchar_15 ip_address UK
+    enum status
+    date installed_at
+  }
+  pc_config {
+    smallint config_id PK
+    varchar_40 name UK
+    varchar_60 cpu
+    varchar_60 gpu
+    smallint ram_gb
+    varchar_60 storage
+    varchar_80 monitor
+    smallint refresh_hz
+  }
+  tariff {
+    smallint tariff_id PK
+    tinyint zone_id FK
+    varchar_40 name
+    enum tariff_type
+    decimal_8_2 price
+    smallint duration_min
+    tinyint start_from_h
+    tinyint start_to_h
+    tinyint_1 is_active
+  }
+  zone {
+    tinyint zone_id PK
+    char_3 code UK
+    varchar_40 name UK
+    varchar_255 description
+  }
+  computer }o--|| pc_config : "config_id"
+  computer }o--|| zone : "zone_id"
+  tariff }o--|| zone : "zone_id"

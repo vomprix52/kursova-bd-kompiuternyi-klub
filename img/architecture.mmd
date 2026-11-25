@@ -1,0 +1,11 @@
+flowchart LR
+  B["Браузер<br/>(HTML/CSS)"] -- HTTP --> F["Flask-застосунок<br/>app.py, шаблони Jinja2"]
+  F -- "PyMySQL<br/>CALL / SELECT" --> M[("MySQL<br/>БД cyberclub")]
+  subgraph M2 [" "]
+    direction TB
+    R["Ролі: r_owner, r_operator,<br/>r_technician, r_client_app"]
+    P["Процедури та функції"]
+    T["Тригери та подія"]
+    V["Представлення"]
+  end
+  M --- M2

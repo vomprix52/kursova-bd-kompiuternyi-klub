@@ -1,0 +1,46 @@
+erDiagram
+  loyalty_level["Рівень лояльності"]
+  client["Клієнт"]
+  zone["Зона"]
+  pc_config["Конфігурація"]
+  computer["Ігрове місце"]
+  tariff["Тариф"]
+  position["Посада"]
+  employee["Працівник"]
+  shift["Зміна"]
+  booking["Бронювання"]
+  game_session["Ігрова сесія"]
+  product_category["Категорія товару"]
+  product["Товар"]
+  sale["Чек"]
+  sale_item["Позиція чека"]
+  balance_transaction["Транзакція балансу"]
+  maintenance_request["Заявка на ремонт"]
+  audit_log["Журнал аудиту"]
+  audit_log }o--o| employee : "фіксує зміни"
+  balance_transaction }o--|| client : "змінює баланс"
+  balance_transaction }o--o| employee : "проводить"
+  balance_transaction }o--o| sale : "списання за чеком"
+  booking }o--|| client : "створює"
+  booking }o--|| computer : "резервує"
+  booking }o--o| employee : "оформлює"
+  client }o--|| loyalty_level : "має рівень"
+  computer }o--|| pc_config : "має конфігурацію"
+  computer }o--|| zone : "розміщене в"
+  employee }o--|| position : "обіймає"
+  game_session |o--o| booking : "реалізує"
+  game_session }o--|| client : "грає"
+  game_session }o--|| computer : "відбувається на"
+  game_session }o--o| shift : "відкрита в"
+  game_session }o--|| tariff : "оплачується за"
+  maintenance_request }o--o| employee : "подає / виконує"
+  maintenance_request }o--|| computer : "стосується"
+  product }o--|| product_category : "належить до"
+  sale }o--o| client : "купує"
+  sale }o--o| employee : "продає"
+  sale |o--o| game_session : "оплачує"
+  sale }o--o| shift : "пробита в"
+  sale_item }o--|| product : "входить у"
+  sale_item }o--|| sale : "містить"
+  shift }o--|| employee : "відпрацьовує"
+  tariff }o--|| zone : "діє в"

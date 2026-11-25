@@ -1,0 +1,59 @@
+erDiagram
+  direction LR
+  audit_log {
+    bigint audit_id PK
+    varchar_40 table_name
+    int record_id
+    enum action
+    varchar_40 field_name
+    varchar_255 old_value
+    varchar_255 new_value
+    smallint employee_id FK
+    varchar_80 changed_by
+    datetime changed_at
+  }
+  computer {
+    smallint computer_id PK
+  }
+  employee {
+    smallint employee_id PK
+    varchar_50 last_name
+    varchar_50 first_name
+    varchar_13 phone UK
+    varchar_30 login UK
+    varchar_255 password_hash
+    tinyint position_id FK
+    date hired_at
+    tinyint_1 is_active
+  }
+  maintenance_request {
+    int request_id PK
+    smallint computer_id FK
+    smallint reported_by FK
+    smallint assigned_to FK
+    varchar_255 problem
+    enum priority
+    enum status
+    datetime created_at
+    datetime resolved_at
+    varchar_255 resolution
+  }
+  position {
+    tinyint position_id PK
+    varchar_40 title UK
+    decimal_7_2 hourly_rate
+  }
+  shift {
+    int shift_id PK
+    smallint employee_id FK
+    datetime started_at
+    datetime ended_at
+    decimal_10_2 cash_start
+    decimal_10_2 cash_end
+  }
+  audit_log }o--o| employee : "employee_id"
+  employee }o--|| position : "position_id"
+  maintenance_request }o--o| employee : "assigned_to"
+  maintenance_request }o--|| computer : "computer_id"
+  maintenance_request }o--|| employee : "reported_by"
+  shift }o--|| employee : "employee_id"

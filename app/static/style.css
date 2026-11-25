@@ -1,0 +1,55 @@
+:root { --bg:#f4f6fa; --card:#fff; --ink:#1d2433; --muted:#6b7385; --line:#e2e6ee;
+  --accent:#3a5bd9; --free:#2f9e5b; --busy:#d9534f; --reserved:#e0a526; --maint:#7d8597; }
+* { box-sizing:border-box; }
+body { margin:0; font:15px/1.45 "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); }
+header { background:#1d2433; color:#fff; display:flex; align-items:center; gap:28px; padding:0 28px; height:58px; }
+header .brand { font-weight:700; font-size:19px; letter-spacing:.5px; }
+header .brand span { color:#7fa0ff; }
+header nav a { color:#c9d2e8; text-decoration:none; margin-right:18px; }
+header nav a.on, header nav a:hover { color:#fff; }
+header .who { margin-left:auto; color:#c9d2e8; font-size:14px; }
+header .who a { color:#7fa0ff; margin-left:10px; }
+main { padding:24px 28px; max-width:1320px; margin:0 auto; }
+h1 { font-size:22px; margin:0 0 16px; }
+h2 { font-size:17px; margin:0 0 12px; }
+.grid { display:grid; gap:18px; }
+.g2 { grid-template-columns: 2fr 1fr; } .g3 { grid-template-columns:1fr 1fr 1fr; } .g11 { grid-template-columns:1fr 1fr; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; }
+.zone { margin-bottom:16px; }
+.zone h3 { font-size:14px; text-transform:uppercase; color:var(--muted); margin:0 0 8px; letter-spacing:.6px; }
+.seats { display:flex; flex-wrap:wrap; gap:10px; }
+.seat { width:132px; border-radius:8px; padding:9px 10px; color:#fff; font-size:12.5px; min-height:84px; position:relative; }
+.seat b { font-size:16px; display:block; }
+.seat.free { background:var(--free); } .seat.busy { background:var(--busy); }
+.seat.reserved { background:var(--reserved); } .seat.maintenance { background:var(--maint); }
+.seat form { position:absolute; right:6px; bottom:6px; }
+.seat button { background:rgba(255,255,255,.25); border:0; color:#fff; border-radius:5px; padding:2px 7px; cursor:pointer; font-size:12px; }
+.legend span { display:inline-block; margin-right:14px; font-size:13px; color:var(--muted); }
+.legend i { display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+label { display:block; font-size:13px; color:var(--muted); margin:8px 0 3px; }
+input, select { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; background:#fff; }
+.btn { background:var(--accent); color:#fff; border:0; border-radius:6px; padding:8px 16px; font:inherit; cursor:pointer; margin-top:12px; }
+.btn.small { padding:3px 10px; margin:0; font-size:13px; }
+.btn.grey { background:#8a93a6; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th { text-align:left; color:var(--muted); font-weight:600; border-bottom:2px solid var(--line); padding:6px 8px; }
+td { border-bottom:1px solid var(--line); padding:6px 8px; }
+td.num, th.num { text-align:right; }
+.flash { padding:10px 14px; border-radius:7px; margin-bottom:14px; }
+.flash.error { background:#fde8e7; color:#a3312c; border:1px solid #f4c3c0; }
+.flash.ok { background:#e5f5ec; color:#21734a; border:1px solid #bfe3cd; }
+.kpi { display:flex; gap:18px; margin-bottom:18px; }
+.kpi .card { flex:1; } .kpi .v { font-size:26px; font-weight:700; } .kpi .l { color:var(--muted); font-size:13px; }
+.bars { display:flex; align-items:flex-end; gap:6px; height:170px; padding-top:10px; }
+.bars div { flex:1; background:var(--accent); border-radius:4px 4px 0 0; position:relative; }
+.bars div span { position:absolute; bottom:-20px; left:0; right:0; text-align:center; font-size:11px; color:var(--muted); }
+.pill { display:inline-block; padding:1px 9px; border-radius:20px; font-size:12px; background:#eef1f7; }
+.pill.high, .pill.no_show { background:#fde8e7; color:#a3312c; }
+.pill.pending, .pill.in_progress { background:#fff3d6; color:#8a6200; }
+.pill.fulfilled, .pill.resolved { background:#e5f5ec; color:#21734a; }
+.login { max-width:380px; margin:70px auto; }
+.tabs { display:flex; gap:8px; margin-bottom:6px; } .tabs label { flex:1; margin:0; }
+.tabs input { display:none; }
+.tabs span { display:block; text-align:center; padding:7px; border:1px solid var(--line); border-radius:6px; cursor:pointer; color:var(--ink); }
+.tabs input:checked + span { background:var(--accent); color:#fff; border-color:var(--accent); }
+.muted { color:var(--muted); font-size:13px; }

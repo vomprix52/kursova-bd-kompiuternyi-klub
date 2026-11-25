@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% block title %}Мій кабінет{% endblock %}
+{% block content %}
+<div class="kpi">
+  <div class="card"><div class="v">{{ me.balance }} грн</div><div class="l">баланс</div></div>
+  <div class="card"><div class="v">{{ me.level_name }}</div><div class="l">рівень лояльності · знижка {{ me.discount_pct }}%</div></div>
+  <div class="card"><div class="v">{{ me.sessions }}</div><div class="l">сесій · {{ me.hours_played }} год у клубі</div></div>
+</div>
+<div class="grid g3">
+  <div class="card"><h2>Тарифи</h2><table><tr><th>Зона</th><th>Тариф</th><th class="num">Ціна</th></tr>
+    {% for t in tariffs %}<tr><td>{{ t.zone }}</td><td>{{ t.name }}{% if t.duration_min %} <span class="muted">({{ t.duration_min // 60 }} год)</span>{% endif %}</td><td class="num">{{ t.price }}{{ '/год' if t.tariff_type == 'hourly' }}</td></tr>{% endfor %}</table></div>
+  <div class="card"><h2>Мої бронювання</h2><table><tr><th>Місце</th><th>Час</th><th>Статус</th></tr>
+    {% for b in my_bookings %}<tr><td>{{ b.seat_label }}</td><td>{{ b.starts_at.strftime('%d.%m %H:%M') }}–{{ b.ends_at.strftime('%H:%M') }}</td><td><span class="pill {{ b.status }}">{{ ua(b.status) }}</span></td></tr>
+    {% else %}<tr><td colspan="3" class="muted">Бронювань немає</td></tr>{% endfor %}</table></div>
+  <div class="card"><h2>Забронювати місце</h2><form method="post">
+    <label>Місце</label><select name="computer_id">{% for s in seats if s.status != 'maintenance' %}<option value="{{ s.computer_id }}">{{ s.seat_label }}</option>{% endfor %}</select>
+    <label>Початок</label><input type="datetime-local" name="starts_at" required>
+    <label>Кінець</label><input type="datetime-local" name="ends_at" required>
+    <button class="btn">Забронювати</button></form></div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+# середовища і залежності
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+
+# локальний екземпляр MySQL
+mysql_data/
+mysqld.log
+
+# проміжні файли збірки
+docs/tmp/
+presentation/tmp/
+
+# особисті нотатки до захисту і службові документи
+docs/Zakhyst.*
+docs/Shpargalka.*
+docs/Retsenziia.docx
+docs/Tytulka.docx
+docs/Kursova_BD_Kompiuternyi_klub1.pdf
+docs/*.docx

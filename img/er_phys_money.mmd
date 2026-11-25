@@ -1,0 +1,64 @@
+erDiagram
+  direction LR
+  balance_transaction {
+    int tx_id PK
+    int client_id FK
+    enum tx_type
+    decimal_10_2 amount
+    decimal_10_2 balance_after
+    enum payment_method
+    int sale_id FK
+    smallint employee_id FK
+    datetime created_at
+  }
+  client {
+    int client_id PK
+  }
+  employee {
+    smallint employee_id PK
+  }
+  game_session {
+    int session_id PK
+  }
+  product {
+    smallint product_id PK
+    tinyint category_id FK
+    varchar_60 name UK
+    decimal_8_2 price
+    int stock_qty
+    tinyint_1 is_active
+  }
+  product_category {
+    tinyint category_id PK
+    varchar_40 name UK
+  }
+  sale {
+    int sale_id PK
+    enum sale_type
+    int session_id FK,UK
+    int client_id FK
+    smallint employee_id FK
+    int shift_id FK
+    datetime created_at
+    enum payment_method
+    decimal_10_2 total
+  }
+  sale_item {
+    int sale_id PK,FK
+    smallint product_id PK,FK
+    smallint quantity
+    decimal_8_2 unit_price
+  }
+  shift {
+    int shift_id PK
+  }
+  balance_transaction }o--|| client : "client_id"
+  balance_transaction }o--o| employee : "employee_id"
+  balance_transaction }o--o| sale : "sale_id"
+  product }o--|| product_category : "category_id"
+  sale }o--o| client : "client_id"
+  sale }o--o| employee : "employee_id"
+  sale |o--o| game_session : "session_id"
+  sale }o--o| shift : "shift_id"
+  sale_item }o--|| product : "product_id"
+  sale_item }o--|| sale : "sale_id"

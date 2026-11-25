@@ -1,0 +1,2480 @@
+{
+ "COUNTS": {
+  "client": 80,
+  "computer": 28,
+  "zone": 4,
+  "tariff": 10,
+  "employee": 7,
+  "shift": 185,
+  "game_session": 1208,
+  "booking": 96,
+  "balance_transaction": 1992,
+  "sale": 1528,
+  "sale_item": 522,
+  "product": 18,
+  "maintenance_request": 16,
+  "loyalty_level": 5,
+  "pc_config": 4,
+  "position": 3,
+  "product_category": 5,
+  "audit_log": 0,
+  "period": [
+   "2026-07-01 10:12:00",
+   "2026-09-30 23:28:00"
+  ],
+  "sale_bar": 320
+ },
+ "Q01": {
+  "code": "Q01",
+  "title": "Вільні місця VIP-зони з конфігурацією",
+  "statements": [
+   {
+    "sql": "SELECT c.seat_label, p.cpu, p.gpu, p.refresh_hz\nFROM computer c\nJOIN zone z      ON z.zone_id = c.zone_id\nJOIN pc_config p ON p.config_id = c.config_id\nWHERE z.code = 'VIP' AND c.status = 'free'\nORDER BY c.seat_label;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "seat_label",
+       "cpu",
+       "gpu",
+       "refresh_hz"
+      ],
+      "rows": [
+       [
+        "V-01",
+        "AMD Ryzen 7 7800X3D",
+        "NVIDIA GeForce RTX 4070 SUPER 12 ГБ",
+        "180"
+       ],
+       [
+        "V-02",
+        "AMD Ryzen 7 7800X3D",
+        "NVIDIA GeForce RTX 4070 SUPER 12 ГБ",
+        "180"
+       ],
+       [
+        "V-03",
+        "AMD Ryzen 7 7800X3D",
+        "NVIDIA GeForce RTX 4070 SUPER 12 ГБ",
+        "180"
+       ],
+       [
+        "V-04",
+        "AMD Ryzen 7 7800X3D",
+        "NVIDIA GeForce RTX 4070 SUPER 12 ГБ",
+        "180"
+       ],
+       [
+        "V-06",
+        "AMD Ryzen 7 7800X3D",
+        "NVIDIA GeForce RTX 4070 SUPER 12 ГБ",
+        "180"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 5
+   }
+  ]
+ },
+ "Q02": {
+  "code": "Q02",
+  "title": "Клієнти з балансом понад 400 грн",
+  "statements": [
+   {
+    "sql": "SELECT login, CONCAT(last_name, ' ', first_name) AS client, phone, balance\nFROM client\nWHERE balance > 400 AND status = 'active'\nORDER BY balance DESC\nLIMIT 6;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "login",
+       "client",
+       "phone",
+       "balance"
+      ],
+      "rows": [
+       [
+        "anton_holo33",
+        "Головатюк Антон",
+        "+380636658179",
+        "963.44"
+       ],
+       [
+        "matvii_osta16",
+        "Остапчук Матвій",
+        "+380974158025",
+        "913.15"
+       ],
+       [
+        "ivan_zhuk2",
+        "Жук Іван",
+        "+380506682395",
+        "820.00"
+       ],
+       [
+        "maksym_trok15",
+        "Трохимчук Максим",
+        "+380979434524",
+        "810.00"
+       ],
+       [
+        "kyrylo_mysi8",
+        "Мисюк Кирило",
+        "+380505543955",
+        "750.00"
+       ],
+       [
+        "sofiia_sai34",
+        "Сай Софія",
+        "+380970857531",
+        "730.00"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 6
+   }
+  ]
+ },
+ "Q03": {
+  "code": "Q03",
+  "title": "Вечірні сесії суботи 12.09.2026",
+  "statements": [
+   {
+    "sql": "SELECT s.session_id, c.seat_label, CONCAT(cl.last_name, ' ', cl.first_name) AS client,\n       TIME(s.started_at) AS start_t, TIME(s.ended_at) AS end_t, s.cost\nFROM game_session s\nJOIN computer c ON c.computer_id = s.computer_id\nJOIN client cl  ON cl.client_id = s.client_id\nWHERE s.started_at BETWEEN '2026-09-12 18:00:00' AND '2026-09-12 23:59:59'\nORDER BY s.started_at;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "session_id",
+       "seat_label",
+       "client",
+       "start_t",
+       "end_t",
+       "cost"
+      ],
+      "rows": [
+       [
+        "959",
+        "V-06",
+        "Хомич Максим",
+        "18:17:00",
+        "21:10:00",
+        "223.20"
+       ],
+       [
+        "960",
+        "V-05",
+        "Литвин Кирило",
+        "19:07:00",
+        "22:38:00",
+        "294.35"
+       ],
+       [
+        "961",
+        "V-01",
+        "Зінчук Анна",
+        "19:12:00",
+        "22:12:00",
+        "261.90"
+       ],
+       [
+        "962",
+        "S-02",
+        "Дмитрук Назар",
+        "20:41:00",
+        "23:22:00",
+        "155.20"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "Q04": {
+  "code": "Q04",
+  "title": "Останні чеки бару з позиціями (з'єднання п'яти таблиць)",
+  "statements": [
+   {
+    "sql": "SELECT sl.sale_id, DATE_FORMAT(sl.created_at, '%d.%m %H:%i') AS sold_at,\n       COALESCE(CONCAT(cl.last_name, ' ', LEFT(cl.first_name, 1), '.'), 'анонімний') AS buyer,\n       e.last_name AS cashier, p.name AS product, si.quantity AS qty, si.unit_price\nFROM sale sl\nJOIN sale_item si    ON si.sale_id = sl.sale_id\nJOIN product p       ON p.product_id = si.product_id\nJOIN employee e      ON e.employee_id = sl.employee_id\nLEFT JOIN client cl  ON cl.client_id = sl.client_id\nWHERE sl.sale_type = 'bar'\n  AND sl.sale_id IN (SELECT sale_id FROM (SELECT sale_id FROM sale\n                      WHERE sale_type = 'bar' AND created_at < '2026-10-01'\n                      ORDER BY sale_id DESC LIMIT 4) last4)\nORDER BY sl.sale_id, p.name;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "sale_id",
+       "sold_at",
+       "buyer",
+       "cashier",
+       "product",
+       "qty",
+       "unit_price"
+      ],
+      "rows": [
+       [
+        "1511",
+        "30.09 00:55",
+        "Коваленко А.",
+        "Ткачук",
+        "Monster Energy 0,5 л",
+        "2",
+        "65.00"
+       ],
+       [
+        "1511",
+        "30.09 00:55",
+        "Коваленко А.",
+        "Ткачук",
+        "Red Bull 0,25 л",
+        "1",
+        "70.00"
+       ],
+       [
+        "1511",
+        "30.09 00:55",
+        "Коваленко А.",
+        "Ткачук",
+        "Сухарики Flint 110 г",
+        "2",
+        "30.00"
+       ],
+       [
+        "1513",
+        "30.09 13:55",
+        "Лисенко Д.",
+        "Савчук",
+        "Non Stop 0,5 л",
+        "1",
+        "45.00"
+       ],
+       [
+        "1517",
+        "30.09 19:46",
+        "Вознюк М.",
+        "Савчук",
+        "Burn 0,5 л",
+        "1",
+        "55.00"
+       ],
+       [
+        "1523",
+        "30.09 23:12",
+        "Олійник Є.",
+        "Поліщук",
+        "Мівіна курка (з окропом)",
+        "1",
+        "35.00"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 6
+   }
+  ]
+ },
+ "Q05": {
+  "code": "Q05",
+  "title": "Виручка від ігрового часу за зонами (вересень 2026)",
+  "statements": [
+   {
+    "sql": "SELECT z.name AS zone, COUNT(*) AS sessions,\n       ROUND(SUM(s.minutes_used) / 60, 1) AS hours,\n       SUM(s.cost) AS revenue,\n       ROUND(AVG(s.cost), 2) AS avg_check\nFROM game_session s\nJOIN computer c ON c.computer_id = s.computer_id\nJOIN zone z     ON z.zone_id = c.zone_id\nWHERE s.started_at >= '2026-09-01' AND s.started_at < '2026-10-01'\nGROUP BY z.zone_id, z.name\nORDER BY revenue DESC;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "zone",
+       "sessions",
+       "hours",
+       "revenue",
+       "avg_check"
+      ],
+      "rows": [
+       [
+        "VIP",
+        "121",
+        "374.7",
+        "26025.36",
+        "215.09"
+       ],
+       [
+        "Standard",
+        "160",
+        "493.0",
+        "23696.34",
+        "148.10"
+       ],
+       [
+        "Bootcamp",
+        "68",
+        "221.7",
+        "17391.50",
+        "255.76"
+       ],
+       [
+        "Console",
+        "60",
+        "134.4",
+        "12951.42",
+        "215.86"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "Q06": {
+  "code": "Q06",
+  "title": "Постійні клієнти: понад 15 сесій (HAVING)",
+  "statements": [
+   {
+    "sql": "SELECT CONCAT(cl.last_name, ' ', cl.first_name) AS client,\n       COUNT(*) AS sessions,\n       ROUND(AVG(s.minutes_used)) AS avg_minutes,\n       SUM(s.cost) AS spent\nFROM game_session s\nJOIN client cl ON cl.client_id = s.client_id\nGROUP BY cl.client_id, cl.last_name, cl.first_name\nHAVING COUNT(*) > 15\nORDER BY sessions DESC;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "client",
+       "sessions",
+       "avg_minutes",
+       "spent"
+      ],
+      "rows": [
+       [
+        "Захарчук Іван",
+        "47",
+        "161",
+        "7171.25"
+       ],
+       [
+        "Юрчук Дарина",
+        "47",
+        "146",
+        "8747.26"
+       ],
+       [
+        "Дячук Тарас",
+        "46",
+        "193",
+        "7854.76"
+       ],
+       [
+        "Литвин Кирило",
+        "45",
+        "192",
+        "10085.14"
+       ],
+       [
+        "Олійник Євген",
+        "44",
+        "176",
+        "9392.27"
+       ],
+       [
+        "Павлюк Тарас",
+        "44",
+        "250",
+        "10497.28"
+       ],
+       [
+        "Остапчук Матвій",
+        "41",
+        "164",
+        "8536.85"
+       ],
+       [
+        "Шевчук Віктор",
+        "41",
+        "180",
+        "8339.17"
+       ],
+       [
+        "Кравчук Владислав",
+        "40",
+        "190",
+        "6798.03"
+       ],
+       [
+        "Хомич Максим",
+        "40",
+        "175",
+        "9497.15"
+       ],
+       [
+        "Коваленко Антон",
+        "38",
+        "154",
+        "6978.99"
+       ],
+       [
+        "Лисенко Дарина",
+        "38",
+        "163",
+        "5763.20"
+       ],
+       [
+        "Мороз Михайло",
+        "38",
+        "159",
+        "7261.48"
+       ],
+       [
+        "Карпюк Ярослав",
+        "37",
+        "180",
+        "5295.55"
+       ],
+       [
+        "Марчук Данило",
+        "35",
+        "144",
+        "6755.98"
+       ],
+       [
+        "Бондаренко Денис",
+        "32",
+        "159",
+        "6994.65"
+       ],
+       [
+        "Климчук Максим",
+        "25",
+        "183",
+        "4552.85"
+       ],
+       [
+        "Нестерук Денис",
+        "21",
+        "141",
+        "4552.10"
+       ],
+       [
+        "Шульга Денис",
+        "21",
+        "170",
+        "3557.63"
+       ],
+       [
+        "Головатюк Антон",
+        "19",
+        "180",
+        "4154.56"
+       ],
+       [
+        "Вознюк Михайло",
+        "18",
+        "177",
+        "3749.10"
+       ],
+       [
+        "Зінчук Анна",
+        "18",
+        "264",
+        "4037.80"
+       ],
+       [
+        "Гуменюк Ярослав",
+        "17",
+        "159",
+        "2763.85"
+       ],
+       [
+        "Сахнюк Олег",
+        "16",
+        "188",
+        "3079.15"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 24
+   }
+  ]
+ },
+ "Q07": {
+  "code": "Q07",
+  "title": "Профіль навантаження: старти сесій за годинами доби",
+  "statements": [
+   {
+    "sql": "SELECT HOUR(started_at) AS hour_of_day, COUNT(*) AS sessions,\n       ROUND(AVG(minutes_used)) AS avg_minutes\nFROM game_session\nGROUP BY HOUR(started_at)\nORDER BY hour_of_day;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "hour_of_day",
+       "sessions",
+       "avg_minutes"
+      ],
+      "rows": [
+       [
+        "0",
+        "18",
+        "216"
+       ],
+       [
+        "1",
+        "24",
+        "369"
+       ],
+       [
+        "10",
+        "30",
+        "148"
+       ],
+       [
+        "11",
+        "25",
+        "137"
+       ],
+       [
+        "12",
+        "64",
+        "196"
+       ],
+       [
+        "13",
+        "52",
+        "139"
+       ],
+       [
+        "14",
+        "106",
+        "152"
+       ],
+       [
+        "15",
+        "62",
+        "146"
+       ],
+       [
+        "16",
+        "110",
+        "170"
+       ],
+       [
+        "17",
+        "111",
+        "142"
+       ],
+       [
+        "18",
+        "121",
+        "144"
+       ],
+       [
+        "19",
+        "110",
+        "134"
+       ],
+       [
+        "20",
+        "104",
+        "138"
+       ],
+       [
+        "21",
+        "101",
+        "148"
+       ],
+       [
+        "22",
+        "95",
+        "278"
+       ],
+       [
+        "23",
+        "75",
+        "291"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 16
+   }
+  ]
+ },
+ "Q08": {
+  "code": "Q08",
+  "title": "Активні гравці, які жодного разу не купували в барі (NOT EXISTS)",
+  "statements": [
+   {
+    "sql": "SELECT CONCAT(cl.last_name, ' ', cl.first_name) AS client,\n       (SELECT COUNT(*) FROM game_session s WHERE s.client_id = cl.client_id) AS sessions\nFROM client cl\nWHERE NOT EXISTS (SELECT 1 FROM sale sl\n                  WHERE sl.client_id = cl.client_id AND sl.sale_type = 'bar')\n  AND (SELECT COUNT(*) FROM game_session s WHERE s.client_id = cl.client_id) >= 5\nORDER BY sessions DESC;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "client",
+       "sessions"
+      ],
+      "rows": [
+       [
+        "Кушнір Максим",
+        "13"
+       ],
+       [
+        "Пилипчук Денис",
+        "8"
+       ],
+       [
+        "Рудь Катерина",
+        "7"
+       ],
+       [
+        "Назарук Михайло",
+        "6"
+       ],
+       [
+        "Валь Антон",
+        "5"
+       ],
+       [
+        "Савицький Микола",
+        "5"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 6
+   }
+  ]
+ },
+ "Q09": {
+  "code": "Q09",
+  "title": "Найзавантаженіше місце в кожній зоні (корельований підзапит)",
+  "statements": [
+   {
+    "sql": "SELECT z.name AS zone, c.seat_label,\n       ROUND(SUM(s.minutes_used) / 60, 1) AS hours\nFROM game_session s\nJOIN computer c ON c.computer_id = s.computer_id\nJOIN zone z     ON z.zone_id = c.zone_id\nGROUP BY z.zone_id, z.name, c.computer_id, c.seat_label\nHAVING SUM(s.minutes_used) = (\n  SELECT MAX(t.m) FROM (\n    SELECT c2.zone_id, SUM(s2.minutes_used) AS m\n    FROM game_session s2 JOIN computer c2 ON c2.computer_id = s2.computer_id\n    GROUP BY c2.zone_id, c2.computer_id) t\n  WHERE t.zone_id = z.zone_id)\nORDER BY z.zone_id;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "zone",
+       "seat_label",
+       "hours"
+      ],
+      "rows": [
+       [
+        "Standard",
+        "S-05",
+        "139.0"
+       ],
+       [
+        "VIP",
+        "V-01",
+        "208.3"
+       ],
+       [
+        "Bootcamp",
+        "B-04",
+        "142.6"
+       ],
+       [
+        "Console",
+        "C-01",
+        "143.2"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "Q10": {
+  "code": "Q10",
+  "title": "Клієнти, які купували «Нічний» пакет (підзапит з IN)",
+  "statements": [
+   {
+    "sql": "SELECT login, CONCAT(last_name, ' ', first_name) AS client\nFROM client\nWHERE client_id IN (SELECT s.client_id FROM game_session s\n                    JOIN tariff t ON t.tariff_id = s.tariff_id\n                    WHERE t.name = 'Нічний')\nORDER BY last_name\nLIMIT 8;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "login",
+       "client"
+      ],
+      "rows": [
+       [
+        "kyrylo_bily22",
+        "Білик Кирило"
+       ],
+       [
+        "roman_bohu65",
+        "Богуш Роман"
+       ],
+       [
+        "anton_holo33",
+        "Головатюк Антон"
+       ],
+       [
+        "denys_hord94",
+        "Гордійчук Денис"
+       ],
+       [
+        "iaroslav_hume21",
+        "Гуменюк Ярослав"
+       ],
+       [
+        "viktoriia_demc75",
+        "Демчук Вікторія"
+       ],
+       [
+        "taras_diac55",
+        "Дячук Тарас"
+       ],
+       [
+        "ivan_zhuk2",
+        "Жук Іван"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 8
+   }
+  ]
+ },
+ "Q11": {
+  "code": "Q11",
+  "title": "Рейтинг клієнтів за витратами (RANK, частка у виручці)",
+  "statements": [
+   {
+    "sql": "SELECT RANK() OVER (ORDER BY total_spent DESC) AS place,\n       CONCAT(last_name, ' ', first_name) AS client,\n       total_spent,\n       ROUND(100 * total_spent / SUM(total_spent) OVER (), 1) AS share_pct,\n       NTILE(4) OVER (ORDER BY total_spent DESC) AS quartile\nFROM client\nORDER BY place\nLIMIT 8;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "place",
+       "client",
+       "total_spent",
+       "share_pct",
+       "quartile"
+      ],
+      "rows": [
+       [
+        "1",
+        "Павлюк Тарас",
+        "10731.28",
+        "4.5",
+        "1"
+       ],
+       [
+        "2",
+        "Литвин Кирило",
+        "10225.14",
+        "4.3",
+        "1"
+       ],
+       [
+        "3",
+        "Олійник Євген",
+        "9612.27",
+        "4.1",
+        "1"
+       ],
+       [
+        "4",
+        "Хомич Максим",
+        "9584.15",
+        "4.1",
+        "1"
+       ],
+       [
+        "5",
+        "Юрчук Дарина",
+        "8747.26",
+        "3.7",
+        "1"
+       ],
+       [
+        "6",
+        "Остапчук Матвій",
+        "8536.85",
+        "3.6",
+        "1"
+       ],
+       [
+        "7",
+        "Шевчук Віктор",
+        "8401.17",
+        "3.6",
+        "1"
+       ],
+       [
+        "8",
+        "Дячук Тарас",
+        "7994.76",
+        "3.4",
+        "1"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 8
+   }
+  ]
+ },
+ "Q12": {
+  "code": "Q12",
+  "title": "Наростаючий підсумок виручки за вересень (SUM OVER)",
+  "statements": [
+   {
+    "sql": "SELECT work_date, day_revenue,\n       SUM(day_revenue) OVER (ORDER BY work_date) AS running_total\nFROM (SELECT DATE(started_at) AS work_date, SUM(cost) AS day_revenue\n        FROM game_session\n       WHERE started_at >= '2026-09-01' AND started_at < '2026-10-01'\n       GROUP BY DATE(started_at)) d\nORDER BY work_date\nLIMIT 10;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "work_date",
+       "day_revenue",
+       "running_total"
+      ],
+      "rows": [
+       [
+        "2026-09-01",
+        "1920.20",
+        "1920.20"
+       ],
+       [
+        "2026-09-02",
+        "1469.45",
+        "3389.65"
+       ],
+       [
+        "2026-09-03",
+        "2261.25",
+        "5650.90"
+       ],
+       [
+        "2026-09-04",
+        "4222.44",
+        "9873.34"
+       ],
+       [
+        "2026-09-05",
+        "2060.88",
+        "11934.22"
+       ],
+       [
+        "2026-09-06",
+        "4405.11",
+        "16339.33"
+       ],
+       [
+        "2026-09-07",
+        "1579.43",
+        "17918.76"
+       ],
+       [
+        "2026-09-08",
+        "2377.80",
+        "20296.56"
+       ],
+       [
+        "2026-09-09",
+        "1986.57",
+        "22283.13"
+       ],
+       [
+        "2026-09-10",
+        "1549.10",
+        "23832.23"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 10
+   }
+  ]
+ },
+ "Q13": {
+  "code": "Q13",
+  "title": "Динаміка виручки за місяцями (CTE + LAG)",
+  "statements": [
+   {
+    "sql": "WITH games AS (\n  SELECT DATE_FORMAT(started_at, '%Y-%m') AS ym, SUM(cost) AS game_rev\n  FROM game_session GROUP BY ym),\nbar AS (\n  SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym, SUM(total) AS bar_rev\n  FROM sale WHERE sale_type = 'bar' GROUP BY ym)\nSELECT g.ym AS month, g.game_rev, b.bar_rev, g.game_rev + b.bar_rev AS total,\n       ROUND(100 * (g.game_rev + b.bar_rev) /\n             LAG(g.game_rev + b.bar_rev) OVER (ORDER BY g.ym) - 100, 1) AS growth_pct\nFROM games g JOIN bar b ON b.ym = g.ym\nORDER BY g.ym;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "month",
+       "game_rev",
+       "bar_rev",
+       "total",
+       "growth_pct"
+      ],
+      "rows": [
+       [
+        "2026-07",
+        "76339.32",
+        "12104.00",
+        "88443.32",
+        "NULL"
+       ],
+       [
+        "2026-08",
+        "76261.42",
+        "11615.00",
+        "87876.42",
+        "-0.6"
+       ],
+       [
+        "2026-09",
+        "80064.62",
+        "12146.00",
+        "92210.62",
+        "4.9"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 3
+   }
+  ]
+ },
+ "Q14": {
+  "code": "Q14",
+  "title": "Результати адміністраторів за змінами (CTE)",
+  "statements": [
+   {
+    "sql": "WITH shift_stats AS (\n  SELECT sh.shift_id, sh.employee_id,\n         (SELECT COUNT(*) FROM game_session s WHERE s.shift_id = sh.shift_id) AS sessions,\n         (SELECT COALESCE(SUM(t.amount), 0) FROM balance_transaction t\n           WHERE t.tx_type = 'topup' AND t.created_at >= sh.started_at\n             AND t.created_at < sh.ended_at) AS topups,\n         sh.cash_end - sh.cash_start AS cash_in\n  FROM shift sh)\nSELECT CONCAT(e.last_name, ' ', e.first_name) AS admin, COUNT(*) AS shifts,\n       SUM(st.sessions) AS sessions, SUM(st.topups) AS topups,\n       ROUND(AVG(st.cash_in), 2) AS avg_cash_per_shift\nFROM shift_stats st JOIN employee e ON e.employee_id = st.employee_id\nGROUP BY e.employee_id, e.last_name, e.first_name\nORDER BY topups DESC;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "admin",
+       "shifts",
+       "sessions",
+       "topups",
+       "avg_cash_per_shift"
+      ],
+      "rows": [
+       [
+        "Ковальчук Ірина",
+        "46",
+        "470",
+        "87000.00",
+        "1534.41"
+       ],
+       [
+        "Савчук Дмитро",
+        "46",
+        "425",
+        "86350.00",
+        "1299.63"
+       ],
+       [
+        "Поліщук Андрій",
+        "47",
+        "171",
+        "41600.00",
+        "641.17"
+       ],
+       [
+        "Ткачук Марія",
+        "46",
+        "142",
+        "34500.00",
+        "695.93"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "Q15": {
+  "code": "Q15",
+  "title": "Середня зайнятість місць за годинами доби (рекурсивний CTE)",
+  "statements": [
+   {
+    "sql": "WITH RECURSIVE hours AS (\n  SELECT 0 AS h UNION ALL SELECT h + 1 FROM hours WHERE h < 23),\ndays AS (SELECT COUNT(DISTINCT DATE(started_at)) AS n FROM game_session),\nbusy AS (\n  SELECT hr.h, COUNT(*) AS cnt\n  FROM hours hr\n  JOIN game_session s\n    ON s.started_at < TIMESTAMP(DATE(s.started_at), MAKETIME(hr.h, 59, 59))\n   AND s.ended_at  > TIMESTAMP(DATE(s.started_at), MAKETIME(hr.h, 0, 0))\n  GROUP BY hr.h)\nSELECT hr.h AS hour_of_day,\n       ROUND(100 * COALESCE(b.cnt, 0) / (d.n * (SELECT COUNT(*) FROM computer)), 1) AS occupancy_pct\nFROM hours hr CROSS JOIN days d LEFT JOIN busy b ON b.h = hr.h\nWHERE hr.h IN (0, 10, 12, 14, 16, 18, 19, 20, 21, 22, 23)\nORDER BY hr.h;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "hour_of_day",
+       "occupancy_pct"
+      ],
+      "rows": [
+       [
+        "0",
+        "0.7"
+       ],
+       [
+        "10",
+        "1.5"
+       ],
+       [
+        "12",
+        "4.3"
+       ],
+       [
+        "14",
+        "8.7"
+       ],
+       [
+        "16",
+        "11.6"
+       ],
+       [
+        "18",
+        "14.4"
+       ],
+       [
+        "19",
+        "15.1"
+       ],
+       [
+        "20",
+        "15.3"
+       ],
+       [
+        "21",
+        "13.5"
+       ],
+       [
+        "22",
+        "13.1"
+       ],
+       [
+        "23",
+        "12.0"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 11
+   }
+  ]
+ },
+ "Q16": {
+  "code": "Q16",
+  "title": "Коефіцієнт використання зон за весь період",
+  "statements": [
+   {
+    "sql": "SELECT z.name AS zone, COUNT(DISTINCT c.computer_id) AS seats,\n       ROUND(SUM(s.minutes_used) / 60) AS hours_sold,\n       ROUND(100 * SUM(s.minutes_used) / 60 /\n             (COUNT(DISTINCT c.computer_id) * 92 * 24), 1) AS utilization_pct\nFROM zone z\nJOIN computer c ON c.zone_id = z.zone_id\nLEFT JOIN game_session s ON s.computer_id = c.computer_id\nGROUP BY z.zone_id, z.name\nORDER BY utilization_pct DESC;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "zone",
+       "seats",
+       "hours_sold",
+       "utilization_pct"
+      ],
+      "rows": [
+       [
+        "VIP",
+        "6",
+        "1016",
+        "7.7"
+       ],
+       [
+        "Bootcamp",
+        "5",
+        "641",
+        "5.8"
+       ],
+       [
+        "Console",
+        "3",
+        "366",
+        "5.5"
+       ],
+       [
+        "Standard",
+        "14",
+        "1476",
+        "4.8"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "Q17": {
+  "code": "Q17",
+  "title": "INSERT: реєстрація нового клієнта",
+  "statements": [
+   {
+    "sql": "SET TIMESTAMP = UNIX_TIMESTAMP('2026-10-06 17:40:00');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "INSERT INTO client (login, password_hash, last_name, first_name, phone, email, birth_date)\nVALUES ('taras_hryts7', 'pbkdf2:sha256:600000$demo$0', 'Грицюк', 'Тарас',\n        '+380971112233', 'taras.hrytsiuk@gmail.com', '2007-04-18');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT client_id, login, last_name, first_name, balance, level_id, registered_at\nFROM client WHERE login = 'taras_hryts7';",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "client_id",
+       "login",
+       "last_name",
+       "first_name",
+       "balance",
+       "level_id",
+       "registered_at"
+      ],
+      "rows": [
+       [
+        "81",
+        "taras_hryts7",
+        "Грицюк",
+        "Тарас",
+        "0.00",
+        "1",
+        "2026-10-06 17:40:00"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   }
+  ]
+ },
+ "Q18": {
+  "code": "Q18",
+  "title": "UPDATE: блокування клієнта за порушення правил",
+  "statements": [
+   {
+    "sql": "UPDATE client SET status = 'blocked' WHERE login = 'taras_hryts7';",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT login, status FROM client WHERE login = 'taras_hryts7';",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "login",
+       "status"
+      ],
+      "rows": [
+       [
+        "taras_hryts7",
+        "blocked"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "UPDATE client SET status = 'active' WHERE login = 'taras_hryts7';",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   }
+  ]
+ },
+ "Q19": {
+  "code": "Q19",
+  "title": "DELETE: очищення скасованих бронювань, старших за 30 днів",
+  "statements": [
+   {
+    "sql": "SELECT COUNT(*) AS to_delete FROM booking\nWHERE status = 'cancelled' AND starts_at < NOW() - INTERVAL 30 DAY;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "to_delete"
+      ],
+      "rows": [
+       [
+        "13"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "DELETE FROM booking\nWHERE status = 'cancelled' AND starts_at < NOW() - INTERVAL 30 DAY;",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 13
+   },
+   {
+    "sql": "SELECT status, COUNT(*) AS cnt FROM booking GROUP BY status ORDER BY status;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "status",
+       "cnt"
+      ],
+      "rows": [
+       [
+        "pending",
+        "8"
+       ],
+       [
+        "fulfilled",
+        "70"
+       ],
+       [
+        "cancelled",
+        "2"
+       ],
+       [
+        "no_show",
+        "3"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "D01": {
+  "code": "D01",
+  "title": "Функції fn_client_discount та fn_session_cost",
+  "statements": [
+   {
+    "sql": "SELECT c.client_id, CONCAT(c.last_name, ' ', c.first_name) AS client, l.name AS level_name,\n       fn_client_discount(c.client_id) AS discount_pct,\n       fn_session_cost(4, 135, fn_client_discount(c.client_id)) AS vip_135_min,\n       fn_session_cost(3, 600, fn_client_discount(c.client_id)) AS night_std\nFROM client c JOIN loyalty_level l ON l.level_id = c.level_id\nWHERE c.client_id IN (SELECT MIN(client_id) FROM client GROUP BY level_id)\nORDER BY l.min_spent;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "client_id",
+       "client",
+       "level_name",
+       "discount_pct",
+       "vip_135_min",
+       "night_std"
+      ],
+      "rows": [
+       [
+        "40",
+        "Гордійчук Денис",
+        "Новачок",
+        "0.00",
+        "202.50",
+        "250.00"
+       ],
+       [
+        "17",
+        "Левчук Роман",
+        "Бронза",
+        "3.00",
+        "196.43",
+        "242.50"
+       ],
+       [
+        "18",
+        "Сидорук Данило",
+        "Срібло",
+        "5.00",
+        "192.38",
+        "237.50"
+       ],
+       [
+        "1",
+        "Бондаренко Денис",
+        "Золото",
+        "7.00",
+        "188.33",
+        "232.50"
+       ],
+       [
+        "5",
+        "Олійник Євген",
+        "Платина",
+        "10.00",
+        "182.25",
+        "225.00"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 5
+   }
+  ]
+ },
+ "D02": {
+  "code": "D02",
+  "title": "Відкриття зміни адміністратора",
+  "statements": [
+   {
+    "sql": "SET TIMESTAMP = UNIX_TIMESTAMP('2026-10-06 09:00:00');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "INSERT INTO shift (employee_id, started_at, cash_start) VALUES (2, NOW(), 2000);",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "SET @shift = LAST_INSERT_ID();",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT shift_id, employee_id, started_at, cash_start FROM shift WHERE shift_id = @shift;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "shift_id",
+       "employee_id",
+       "started_at",
+       "cash_start"
+      ],
+      "rows": [
+       [
+        "186",
+        "2",
+        "2026-10-06 09:00:00",
+        "2000.00"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   }
+  ]
+ },
+ "D03": {
+  "code": "D03",
+  "title": "sp_top_up: поповнення на 1000 грн з бонусом 5 %",
+  "statements": [
+   {
+    "sql": "SET TIMESTAMP = UNIX_TIMESTAMP('2026-10-06 17:55:00');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT client_id, balance FROM client WHERE client_id = 17;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "client_id",
+       "balance"
+      ],
+      "rows": [
+       [
+        "17",
+        "9.55"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "CALL sp_top_up(17, 1000, 'card', 2, @bal);",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT @bal AS new_balance;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "new_balance"
+      ],
+      "rows": [
+       [
+        "1059.55"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT tx_id, tx_type, amount, balance_after, payment_method, created_at\nFROM balance_transaction WHERE client_id = 17 ORDER BY tx_id DESC LIMIT 2;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "tx_id",
+       "tx_type",
+       "amount",
+       "balance_after",
+       "payment_method",
+       "created_at"
+      ],
+      "rows": [
+       [
+        "1994",
+        "bonus",
+        "50.00",
+        "1059.55",
+        "none",
+        "2026-10-06 17:55:00"
+       ],
+       [
+        "1993",
+        "topup",
+        "1000.00",
+        "1009.55",
+        "card",
+        "2026-10-06 17:55:00"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 2
+   }
+  ]
+ },
+ "D04": {
+  "code": "D04",
+  "title": "sp_start_session: старт погодинної сесії на V-01",
+  "statements": [
+   {
+    "sql": "SET TIMESTAMP = UNIX_TIMESTAMP('2026-10-06 18:00:00');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "CALL sp_start_session(17, 15, 4, @shift, @s1);",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT session_id, client_id, computer_id, started_at, planned_end, discount_pct, status\nFROM game_session WHERE session_id = @s1;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "session_id",
+       "client_id",
+       "computer_id",
+       "started_at",
+       "planned_end",
+       "discount_pct",
+       "status"
+      ],
+      "rows": [
+       [
+        "1209",
+        "17",
+        "15",
+        "2026-10-06 18:00:00",
+        "2026-10-07 06:00:00",
+        "3.00",
+        "active"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT seat_label, status FROM computer WHERE computer_id = 15;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "seat_label",
+       "status"
+      ],
+      "rows": [
+       [
+        "V-01",
+        "busy"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   }
+  ]
+ },
+ "D05": {
+  "code": "D05",
+  "title": "sp_start_session: пакет «3 години» (списання одразу)",
+  "statements": [
+   {
+    "sql": "CALL sp_top_up(3, 500, 'cash', 2, @bal3);",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "CALL sp_start_session(3, 2, 2, @shift, @s2);",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT session_id, started_at, planned_end, cost, status FROM game_session WHERE session_id = @s2;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "session_id",
+       "started_at",
+       "planned_end",
+       "cost",
+       "status"
+      ],
+      "rows": [
+       [
+        "1210",
+        "2026-10-06 18:00:00",
+        "2026-10-06 21:00:00",
+        "148.80",
+        "active"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT sl.sale_id, sl.sale_type, sl.session_id, sl.total, t.tx_type, t.amount, t.balance_after\nFROM sale sl JOIN balance_transaction t ON t.sale_id = sl.sale_id\nWHERE sl.session_id = @s2;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "sale_id",
+       "sale_type",
+       "session_id",
+       "total",
+       "tx_type",
+       "amount",
+       "balance_after"
+      ],
+      "rows": [
+       [
+        "1529",
+        "game",
+        "1210",
+        "148.80",
+        "session",
+        "-148.80",
+        "372.21"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   }
+  ]
+ },
+ "D06": {
+  "code": "D06",
+  "title": "sp_end_session: завершення через 2 год 17 хв",
+  "statements": [
+   {
+    "sql": "SET TIMESTAMP = UNIX_TIMESTAMP('2026-10-06 20:17:00');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT balance AS balance_before FROM client WHERE client_id = 17;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "balance_before"
+      ],
+      "rows": [
+       [
+        "1059.55"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "CALL sp_end_session(@s1);",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "session_id",
+       "minutes_used",
+       "cost"
+      ],
+      "rows": [
+       [
+        "1209",
+        "137",
+        "199.34"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT balance AS balance_after, total_spent, level_id FROM client WHERE client_id = 17;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "balance_after",
+       "total_spent",
+       "level_id"
+      ],
+      "rows": [
+       [
+        "860.21",
+        "2639.79",
+        "3"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT sale_id, sale_type, session_id, employee_id, payment_method, total\nFROM sale WHERE session_id = @s1;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "sale_id",
+       "sale_type",
+       "session_id",
+       "employee_id",
+       "payment_method",
+       "total"
+      ],
+      "rows": [
+       [
+        "1530",
+        "game",
+        "1209",
+        "2",
+        "balance",
+        "199.34"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT seat_label, status FROM computer WHERE computer_id = 15;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "seat_label",
+       "status"
+      ],
+      "rows": [
+       [
+        "V-01",
+        "free"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   }
+  ]
+ },
+ "D07": {
+  "code": "D07",
+  "title": "Помилка: старт сесії при нульовому балансі",
+  "statements": [
+   {
+    "sql": "SELECT client_id, balance FROM client WHERE balance = 0 LIMIT 1 INTO @zero_client, @zb;",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "CALL sp_start_session(@zero_client, 3, 1, @shift, @s3);",
+    "expect_error": true,
+    "error": "ERROR 1644: Недостатньо коштів: баланс має покривати щонайменше 15 хвилин"
+   }
+  ]
+ },
+ "D08": {
+  "code": "D08",
+  "title": "Тригер trg_session_bi: місце на обслуговуванні",
+  "statements": [
+   {
+    "sql": "SELECT seat_label, status FROM computer WHERE computer_id = 19;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "seat_label",
+       "status"
+      ],
+      "rows": [
+       [
+        "V-05",
+        "maintenance"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "INSERT INTO game_session (client_id, computer_id, tariff_id, started_at, planned_end)\nVALUES (5, 19, 4, NOW(), NOW() + INTERVAL 1 HOUR);",
+    "expect_error": true,
+    "error": "ERROR 1644: Місце перебуває на обслуговуванні"
+   }
+  ]
+ },
+ "D09": {
+  "code": "D09",
+  "title": "Тригер trg_booking_bi: перетин бронювань",
+  "statements": [
+   {
+    "sql": "SELECT client_id, balance FROM client\n WHERE balance >= 200 AND status = 'active' AND client_id NOT IN (3, 17)\n ORDER BY client_id LIMIT 1 INTO @bk_client, @bk_balance;",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT @bk_client AS client_id, @bk_balance AS balance;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "client_id",
+       "balance"
+      ],
+      "rows": [
+       [
+        "2",
+        "248.83"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT booking_id, client_id, computer_id, starts_at, ends_at, status\nFROM booking WHERE computer_id = 2 AND status = 'pending';",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "booking_id",
+       "client_id",
+       "computer_id",
+       "starts_at",
+       "ends_at",
+       "status"
+      ],
+      "rows": [
+       [
+        "95",
+        "3",
+        "2",
+        "2026-10-07 18:00:00",
+        "2026-10-07 21:00:00",
+        "pending"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "CALL sp_create_booking(@bk_client, 2, '2026-10-07 20:00:00', '2026-10-07 22:00:00', 2, @b1);",
+    "expect_error": true,
+    "error": "ERROR 1644: БП-03: місце вже заброньоване на частину цього інтервалу"
+   }
+  ]
+ },
+ "D10": {
+  "code": "D10",
+  "title": "sp_create_booking: успішне бронювання",
+  "statements": [
+   {
+    "sql": "CALL sp_create_booking(@bk_client, 2, '2026-10-07 21:00:00', '2026-10-07 23:00:00', 2, @b2);",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT booking_id, client_id, computer_id, starts_at, ends_at, status, created_by\nFROM booking WHERE booking_id = @b2;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "booking_id",
+       "client_id",
+       "computer_id",
+       "starts_at",
+       "ends_at",
+       "status",
+       "created_by"
+      ],
+      "rows": [
+       [
+        "97",
+        "2",
+        "2",
+        "2026-10-07 21:00:00",
+        "2026-10-07 23:00:00",
+        "pending",
+        "2"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   }
+  ]
+ },
+ "D11": {
+  "code": "D11",
+  "title": "Тригер trg_client_bu: заборона від'ємного балансу",
+  "statements": [
+   {
+    "sql": "SELECT client_id, balance FROM client WHERE client_id = 1;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "client_id",
+       "balance"
+      ],
+      "rows": [
+       [
+        "1",
+        "80.35"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "UPDATE client SET balance = balance - 5000 WHERE client_id = 1;",
+    "expect_error": true,
+    "error": "ERROR 1644: БП-08: операція призведе до від'ємного балансу клієнта"
+   }
+  ]
+ },
+ "D12": {
+  "code": "D12",
+  "title": "sp_bar_sale: продаж через JSON, списання складу",
+  "statements": [
+   {
+    "sql": "SELECT product_id, name, stock_qty FROM product WHERE product_id IN (5, 9);",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "product_id",
+       "name",
+       "stock_qty"
+      ],
+      "rows": [
+       [
+        "5",
+        "Monster Energy 0,5 л",
+        "346"
+       ],
+       [
+        "9",
+        "Lay's сметана та зелень 120 г",
+        "349"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 2
+   },
+   {
+    "sql": "CALL sp_bar_sale(3, 2, @shift, 'balance', '[{\"product_id\": 5, \"qty\": 2}, {\"product_id\": 9, \"qty\": 1}]', @sale);",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT sale_id, client_id, payment_method, total FROM sale WHERE sale_id = @sale;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "sale_id",
+       "client_id",
+       "payment_method",
+       "total"
+      ],
+      "rows": [
+       [
+        "1531",
+        "3",
+        "balance",
+        "200.00"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT product_id, name, stock_qty FROM product WHERE product_id IN (5, 9);",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "product_id",
+       "name",
+       "stock_qty"
+      ],
+      "rows": [
+       [
+        "5",
+        "Monster Energy 0,5 л",
+        "344"
+       ],
+       [
+        "9",
+        "Lay's сметана та зелень 120 г",
+        "348"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 2
+   }
+  ]
+ },
+ "D13": {
+  "code": "D13",
+  "title": "БП-09: оплата бару з балансу під час погодинної сесії",
+  "statements": [
+   {
+    "sql": "CALL sp_start_session(17, 16, 4, @shift, @s4);",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "CALL sp_bar_sale(17, 2, @shift, 'balance', '[{\"product_id\": 1, \"qty\": 1}]', @sale2);",
+    "expect_error": true,
+    "error": "ERROR 1644: Під час погодинної сесії оплата бару з балансу недоступна"
+   }
+  ]
+ },
+ "D14": {
+  "code": "D14",
+  "title": "Тригери trg_request_ai / trg_request_au: ремонт місця",
+  "statements": [
+   {
+    "sql": "SET TIMESTAMP = UNIX_TIMESTAMP('2026-10-06 20:30:00');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "INSERT INTO maintenance_request (computer_id, reported_by, problem, priority)\nVALUES (8, 2, 'Не працює клавіатура', 'high');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "SET @req = LAST_INSERT_ID();",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT seat_label, status FROM computer WHERE computer_id = 8;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "seat_label",
+       "status"
+      ],
+      "rows": [
+       [
+        "S-08",
+        "maintenance"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   },
+   {
+    "sql": "SET TIMESTAMP = UNIX_TIMESTAMP('2026-10-06 20:48:00');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "UPDATE maintenance_request\n   SET status = 'resolved', assigned_to = 6, resolved_at = NOW(), resolution = 'Замінено клавіатуру'\n WHERE request_id = @req;",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT seat_label, status FROM computer WHERE computer_id = 8;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "seat_label",
+       "status"
+      ],
+      "rows": [
+       [
+        "S-08",
+        "free"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 1
+   }
+  ]
+ },
+ "D15": {
+  "code": "D15",
+  "title": "Тригер аудиту: зміна ціни тарифу та товару",
+  "statements": [
+   {
+    "sql": "SET @app_employee_id = 1;",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "UPDATE tariff  SET price = 65.00 WHERE tariff_id = 1;",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "UPDATE product SET price = 69.00 WHERE product_id = 5;",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 1
+   },
+   {
+    "sql": "SELECT a.audit_id, a.table_name, a.record_id, a.field_name, a.old_value, a.new_value,\n       e.last_name AS employee, a.changed_at\nFROM audit_log a LEFT JOIN employee e ON e.employee_id = a.employee_id\nORDER BY a.audit_id DESC LIMIT 4;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "audit_id",
+       "table_name",
+       "record_id",
+       "field_name",
+       "old_value",
+       "new_value",
+       "employee",
+       "changed_at"
+      ],
+      "rows": [
+       [
+        "8",
+        "product",
+        "5",
+        "price",
+        "65.00",
+        "69.00",
+        "Мельник",
+        "2026-10-06 20:48:00"
+       ],
+       [
+        "7",
+        "tariff",
+        "1",
+        "price",
+        "60.00",
+        "65.00",
+        "Мельник",
+        "2026-10-06 20:48:00"
+       ],
+       [
+        "6",
+        "client",
+        "3",
+        "balance",
+        "372.21",
+        "172.21",
+        "Ковальчук",
+        "2026-10-06 20:17:00"
+       ],
+       [
+        "5",
+        "client",
+        "17",
+        "level_id",
+        "2",
+        "3",
+        "Ковальчук",
+        "2026-10-06 20:17:00"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "D16": {
+  "code": "D16",
+  "title": "Представлення v_hall_status: поточна завантаженість залу",
+  "statements": [
+   {
+    "sql": "SET TIMESTAMP = UNIX_TIMESTAMP('2026-10-06 20:50:00');",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   },
+   {
+    "sql": "SELECT seat_label, zone_name, status, client_name,\n       TIME(started_at) AS started, TIME(planned_end) AS until, minutes_left\nFROM v_hall_status\nWHERE status <> 'free' OR seat_label IN ('S-01', 'V-02')\nORDER BY computer_id;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "seat_label",
+       "zone_name",
+       "status",
+       "client_name",
+       "started",
+       "until",
+       "minutes_left"
+      ],
+      "rows": [
+       [
+        "S-01",
+        "Standard",
+        "free",
+        "NULL",
+        "NULL",
+        "NULL",
+        "NULL"
+       ],
+       [
+        "S-02",
+        "Standard",
+        "busy",
+        "Коваленко Антон",
+        "18:00:00",
+        "21:00:00",
+        "10"
+       ],
+       [
+        "V-02",
+        "VIP",
+        "busy",
+        "Левчук Роман",
+        "20:17:00",
+        "06:20:00",
+        "570"
+       ],
+       [
+        "V-05",
+        "VIP",
+        "maintenance",
+        "NULL",
+        "NULL",
+        "NULL",
+        "NULL"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "D17": {
+  "code": "D17",
+  "title": "Представлення v_zone_daily_revenue",
+  "statements": [
+   {
+    "sql": "SELECT * FROM v_zone_daily_revenue\nWHERE work_date = '2026-09-26'\nORDER BY revenue DESC;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "work_date",
+       "zone_name",
+       "sessions",
+       "hours_played",
+       "revenue"
+      ],
+      "rows": [
+       [
+        "2026-09-26",
+        "VIP",
+        "5",
+        "10.1",
+        "828.00"
+       ],
+       [
+        "2026-09-26",
+        "Standard",
+        "4",
+        "11.9",
+        "693.00"
+       ],
+       [
+        "2026-09-26",
+        "Console",
+        "2",
+        "6.5",
+        "614.50"
+       ],
+       [
+        "2026-09-26",
+        "Bootcamp",
+        "1",
+        "1.5",
+        "111.60"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 4
+   }
+  ]
+ },
+ "D18": {
+  "code": "D18",
+  "title": "Представлення v_client_stats",
+  "statements": [
+   {
+    "sql": "SELECT client_name, level_name, sessions, hours_played, game_spent, bar_spent, balance\nFROM v_client_stats\nORDER BY game_spent DESC\nLIMIT 5;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "client_name",
+       "level_name",
+       "sessions",
+       "hours_played",
+       "game_spent",
+       "bar_spent",
+       "balance"
+      ],
+      "rows": [
+       [
+        "Павлюк Тарас",
+        "Платина",
+        "44",
+        "183.1",
+        "10497.28",
+        "1879.00",
+        "218.72"
+       ],
+       [
+        "Литвин Кирило",
+        "Платина",
+        "45",
+        "143.9",
+        "10085.14",
+        "1125.00",
+        "74.86"
+       ],
+       [
+        "Хомич Максим",
+        "Платина",
+        "40",
+        "116.5",
+        "9497.15",
+        "844.00",
+        "165.85"
+       ],
+       [
+        "Олійник Євген",
+        "Платина",
+        "44",
+        "129.1",
+        "9392.27",
+        "710.00",
+        "37.73"
+       ],
+       [
+        "Юрчук Дарина",
+        "Золото",
+        "47",
+        "114.4",
+        "8747.26",
+        "1830.00",
+        "152.74"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 5
+   }
+  ]
+ },
+ "D19": {
+  "code": "D19",
+  "title": "Представлення v_bar_popularity",
+  "statements": [
+   {
+    "sql": "SELECT popularity_rank, product_name, category, qty_sold, revenue, stock_qty\nFROM v_bar_popularity\nORDER BY popularity_rank\nLIMIT 6;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "popularity_rank",
+       "product_name",
+       "category",
+       "qty_sold",
+       "revenue",
+       "stock_qty"
+      ],
+      "rows": [
+       [
+        "1",
+        "Моршинська негазована 0,5 л",
+        "Напої",
+        "63",
+        "1386.00",
+        "337"
+       ],
+       [
+        "2",
+        "Monster Energy 0,5 л",
+        "Енергетики",
+        "56",
+        "3640.00",
+        "344"
+       ],
+       [
+        "3",
+        "Coca-Cola 0,5 л",
+        "Напої",
+        "54",
+        "1890.00",
+        "346"
+       ],
+       [
+        "4",
+        "Lay's сметана та зелень 120 г",
+        "Снеки",
+        "52",
+        "3640.00",
+        "348"
+       ],
+       [
+        "5",
+        "Snickers 50 г",
+        "Снеки",
+        "42",
+        "1470.00",
+        "358"
+       ],
+       [
+        "6",
+        "Американо",
+        "Кава та чай",
+        "40",
+        "1600.00",
+        "360"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 6
+   }
+  ]
+ },
+ "D20": {
+  "code": "D20",
+  "title": "Представлення v_open_requests",
+  "statements": [
+   {
+    "sql": "SELECT request_id, seat_label, problem, priority, status, assigned_to\nFROM v_open_requests ORDER BY request_id;",
+    "expect_error": false,
+    "results": [
+     {
+      "columns": [
+       "request_id",
+       "seat_label",
+       "problem",
+       "priority",
+       "status",
+       "assigned_to"
+      ],
+      "rows": [
+       [
+        "15",
+        "V-05",
+        "Не запускається, індикатор живлення блимає",
+        "high",
+        "in_progress",
+        "Гнатюк Віталій"
+       ],
+       [
+        "16",
+        "S-09",
+        "Тьмяніє підсвітка монітора",
+        "low",
+        "open",
+        "NULL"
+       ]
+      ]
+     }
+    ],
+    "rowcount": 2
+   },
+   {
+    "sql": "SET TIMESTAMP = DEFAULT;",
+    "expect_error": false,
+    "results": [],
+    "rowcount": 0
+   }
+  ]
+ },
+ "ACL": [
+  {
+   "user": "kc_operator",
+   "sql": "UPDATE client SET balance = 99999 WHERE client_id = 1",
+   "result": "ERROR 1143: UPDATE command denied to user 'kc_operator'@'localhost' for column 'balance' in table 'client'"
+  },
+  {
+   "user": "kc_operator",
+   "sql": "SELECT COUNT(*) FROM v_hall_status",
+   "result": "OK: 28"
+  },
+  {
+   "user": "kc_tech",
+   "sql": "SELECT COUNT(*) FROM balance_transaction",
+   "result": "ERROR 1142: SELECT command denied to user 'kc_tech'@'localhost' for table 'balance_transaction'"
+  },
+  {
+   "user": "kc_client_app",
+   "sql": "SELECT phone FROM client LIMIT 1",
+   "result": "ERROR 1143: SELECT command denied to user 'kc_client_app'@'localhost' for column 'phone' in table 'client'"
+  },
+  {
+   "user": "kc_owner",
+   "sql": "DELETE FROM game_session WHERE session_id = 1",
+   "result": "ERROR 1142: DELETE command denied to user 'kc_owner'@'localhost' for table 'game_session'"
+  }
+ ]
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="uk">
+<head><meta charset="utf-8"><title>{% block title %}CyberClub{% endblock %} — CyberClub</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+<header>
+  <div class="brand">Cyber<span>Club</span></div>
+  {% if session.role %}
+  <nav>
+    {% set ep = request.endpoint %}
+    {% if session.role == 'operator' %}
+      <a href="{{ url_for('hall') }}" class="{{ 'on' if ep == 'hall' }}">Зала</a>
+      <a href="{{ url_for('bookings') }}" class="{{ 'on' if ep == 'bookings' }}">Бронювання</a>
+      <a href="{{ url_for('bar') }}" class="{{ 'on' if ep == 'bar' }}">Бар</a>
+    {% elif session.role == 'owner' %}
+      <a href="{{ url_for('reports') }}" class="on">Звіти</a>
+    {% elif session.role == 'tech' %}
+      <a href="{{ url_for('tech') }}" class="on">Обладнання</a>
+    {% else %}
+      <a href="{{ url_for('cabinet') }}" class="on">Мій кабінет</a>
+    {% endif %}
+  </nav>
+  <div class="who">{{ session.name }} · {{ ROLE_TITLES[session.role] }} <a href="{{ url_for('logout') }}">Вийти</a></div>
+  {% endif %}
+</header>
+<main>
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}
+    <div class="flash {{ cat }}">{{ msg }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+</body></html>

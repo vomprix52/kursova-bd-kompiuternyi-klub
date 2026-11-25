@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% block title %}Бронювання{% endblock %}
+{% block content %}
+<div class="grid g2">
+  <div class="card"><h2>Актуальні бронювання</h2>
+  <table><tr><th>№</th><th>Місце</th><th>Клієнт</th><th>Початок</th><th>Кінець</th><th>Статус</th><th></th></tr>
+  {% for b in rows %}<tr><td>{{ b.booking_id }}</td><td>{{ b.seat_label }} <span class="muted">{{ b.zone }}</span></td><td>{{ b.client }}</td>
+    <td>{{ b.starts_at.strftime('%d.%m %H:%M') }}</td><td>{{ b.ends_at.strftime('%H:%M') }}</td><td><span class="pill {{ b.status }}">{{ ua(b.status) }}</span></td>
+    <td>{% if b.status == 'pending' %}<form method="post" action="{{ url_for('booking_cancel', bid=b.booking_id) }}"><button class="btn small grey">Скасувати</button></form>{% endif %}</td></tr>{% endfor %}
+  </table></div>
+  <div class="card"><h2>Нове бронювання</h2>
+    <form method="post">
+      <label>Клієнт</label><select name="client_id">{% for c in clients %}<option value="{{ c.client_id }}" {{ 'selected' if request.args.get('c') == c.client_id|string }}>{{ c.name }}</option>{% endfor %}</select>
+      <label>Місце</label><select name="computer_id">{% for s in seats %}<option value="{{ s.computer_id }}" {{ 'selected' if request.args.get('pc') == s.computer_id|string }}>{{ s.seat_label }}</option>{% endfor %}</select>
+      <label>Початок</label><input type="datetime-local" name="starts_at" value="{{ request.args.get('s', '') }}" required>
+      <label>Кінець</label><input type="datetime-local" name="ends_at" value="{{ request.args.get('e', '') }}" required>
+      <button class="btn">Забронювати</button>
+      <p class="muted">Перетин з іншими бронюваннями перевіряє тригер trg_booking_bi, решту правил — процедура sp_create_booking.</p>
+    </form></div>
+</div>
+{% endblock %}

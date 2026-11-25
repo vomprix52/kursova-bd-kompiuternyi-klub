@@ -1,0 +1,47 @@
+{% extends 'base.html' %}{% block title %}Зала{% endblock %}
+{% block content %}
+<div class="kpi">
+  <div class="card"><div class="v">{{ stats.busy }} / {{ stats.total }}</div><div class="l">зайнято місць</div></div>
+  <div class="card"><div class="v">{{ (100 * stats.busy / stats.total) | round | int }}%</div><div class="l">завантаженість залу</div></div>
+  <div class="card">{% if shift %}<div class="v">№{{ shift.shift_id }}</div><div class="l">зміна відкрита о {{ shift.started_at.strftime('%H:%M') }}</div>
+    {% else %}<form method="post" action="{{ url_for('shift_open') }}"><div class="l">Зміну не відкрито</div><button class="btn small">Відкрити зміну</button></form>{% endif %}</div>
+</div>
+<div class="grid g2">
+  <div class="card">
+    <h2>Карта залу</h2>
+    <p class="legend"><span><i style="background:var(--free)"></i>вільне</span><span><i style="background:var(--busy)"></i>зайняте</span><span><i style="background:var(--reserved)"></i>заброньоване</span><span><i style="background:var(--maint)"></i>ремонт</span></p>
+    {% for z in zones %}
+    <div class="zone"><h3>{{ z.name }}</h3><div class="seats">
+      {% for s in seats if s.zone_id == z.zone_id %}
+      <div class="seat {{ s.status }}"><b>{{ s.seat_label }}</b>
+        {% if s.status == 'busy' %}{{ s.client_name }}<br>залишилось {{ s.minutes_left // 60 }} год {{ s.minutes_left % 60 }} хв
+          <form method="post" action="{{ url_for('session_end', sid=s.session_id) }}"><button title="Завершити сесію">■ стоп</button></form>
+        {% elif s.status == 'reserved' %}бронь з {{ s.next_booking.strftime('%H:%M') }}
+        {% else %}{{ ua(s.status) }}{% if s.next_booking %}<br>бронь {{ s.next_booking.strftime('%d.%m %H:%M') }}{% endif %}{% endif %}
+      </div>
+      {% endfor %}
+    </div></div>
+    {% endfor %}
+  </div>
+  <div>
+    <div class="card">
+      <h2>Почати сесію</h2>
+      <form method="post" action="{{ url_for('session_start') }}">
+        <label>Клієнт</label><select name="client_id">{% for c in clients %}<option value="{{ c.client_id }}">{{ c.name }} — {{ c.balance }} грн</option>{% endfor %}</select>
+        <label>Місце</label><select name="computer_id">{% for s in seats if s.status in ('free', 'reserved') %}<option value="{{ s.computer_id }}">{{ s.seat_label }} ({{ s.zone_name }})</option>{% endfor %}</select>
+        <label>Тариф</label><select name="tariff_id">{% for t in tariffs %}<option value="{{ t.tariff_id }}">{{ zones[t.zone_id - 1].name }}: {{ t.name }} — {{ t.price }} грн{{ '/год' if t.tariff_type == 'hourly' }}</option>{% endfor %}</select>
+        <button class="btn">Старт</button>
+      </form>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h2>Поповнити баланс</h2>
+      <form method="post" action="{{ url_for('topup') }}">
+        <label>Клієнт</label><select name="client_id">{% for c in clients %}<option value="{{ c.client_id }}">{{ c.name }} — {{ c.balance }} грн</option>{% endfor %}</select>
+        <div class="grid g11"><div><label>Сума, грн</label><input name="amount" type="number" value="300" min="20"></div>
+        <div><label>Оплата</label><select name="method"><option value="cash">готівка</option><option value="card">картка</option></select></div></div>
+        <button class="btn">Поповнити</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

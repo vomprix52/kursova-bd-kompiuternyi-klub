@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% block title %}Обладнання{% endblock %}
+{% block content %}
+<div class="grid g2">
+  <div class="card"><h2>Відкриті заявки</h2>
+  <table><tr><th>№</th><th>Місце</th><th>Проблема</th><th>Пріоритет</th><th>Статус</th><th class="num">Годин</th><th></th></tr>
+  {% for r in reqs %}<tr><td>{{ r.request_id }}</td><td>{{ r.seat_label }}</td><td>{{ r.problem }}</td><td><span class="pill {{ r.priority }}">{{ ua(r.priority) }}</span></td>
+  <td><span class="pill {{ r.status }}">{{ ua(r.status) }}</span></td><td class="num">{{ r.hours_open }}</td>
+  <td><form method="post" action="{{ url_for('tech_resolve', rid=r.request_id) }}"><button class="btn small">Закрити</button></form></td></tr>
+  {% else %}<tr><td colspan="7" class="muted">Відкритих заявок немає</td></tr>{% endfor %}</table></div>
+  <div class="card"><h2>Нова заявка</h2>
+    <form method="post">
+      <label>Місце</label><select name="computer_id">{% for s in seats %}<option value="{{ s.computer_id }}">{{ s.seat_label }} — {{ ua(s.status) }}</option>{% endfor %}</select>
+      <label>Опис проблеми</label><input name="problem" required>
+      <label>Пріоритет</label><select name="priority"><option value="low">низький</option><option value="medium" selected>середній</option><option value="high">високий (місце виводиться з роботи)</option></select>
+      <button class="btn">Створити</button></form></div>
+</div>
+{% endblock %}
